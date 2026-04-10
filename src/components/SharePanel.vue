@@ -19,13 +19,13 @@
               />
               <div v-else class="preview-fallback-cn">
                 <div class="preview-type preview-type-cn">{{ typeCode }}</div>
-                <div class="preview-cn preview-cn-cn">{{ typeCn }}</div>
+                <div class="preview-cn preview-cn-cn">{{ typeLabel }}</div>
               </div>
             </div>
             <div class="preview-info-cn">
               <div class="preview-badge preview-badge-cn">SBTI 人格测试</div>
               <div class="preview-type preview-type-cn">{{ typeCode }}</div>
-              <div class="preview-cn preview-cn-cn">{{ typeCn }}</div>
+              <div class="preview-cn preview-cn-cn">{{ typeLabel }}</div>
               <div class="preview-intro preview-intro-cn">{{ typeIntro }}</div>
               <div class="preview-match preview-match-cn">{{ badge }}</div>
               <div class="preview-footer preview-footer-cn">经典结果图风格分享页</div>
@@ -38,7 +38,7 @@
            <div class="preview-content">
              <div class="preview-badge">{{ isCN ? 'SBTI 人格测试' : 'SBTI Personality Test' }}</div>
              <div class="preview-type">{{ typeCode }}</div>
-             <div class="preview-cn">{{ typeCn }}</div>
+             <div class="preview-cn">{{ typeLabel }}</div>
              <div class="preview-intro">{{ typeIntro }}</div>
              <div class="preview-match">{{ badge }}</div>
              <div class="preview-footer">
@@ -109,7 +109,7 @@ export default defineComponent({
        default: 'en'
      },
      typeCode: String,
-     typeCn: String,
+     typeLabel: String,
      typeIntro: String,
      badge: String,
      posterUrl: {
@@ -160,7 +160,7 @@ export default defineComponent({
             backgroundColor: isCN.value ? '#f6faf6' : null
           })
         const link = document.createElement('a')
-        link.download = `SBTI-${props.typeCode}-${props.typeCn}.png`
+        link.download = `SBTI-${props.typeCode}-${props.typeLabel}.png`
         link.href = canvas.toDataURL('image/png')
         link.click()
         showToast(isCN.value ? '✅ 图片已保存！' : '✅ Image saved!')
@@ -188,8 +188,8 @@ export default defineComponent({
     function shareTo(platform) {
       const url = encodeURIComponent(getShareUrl())
       const title = isCN.value 
-        ? encodeURIComponent(`我的SBTI人格是 ${props.typeCode}（${props.typeCn}）！快来测测你是哪种抽象人格 →`)
-        : encodeURIComponent(`My SBTI type is ${props.typeCode} (${props.typeCn})! Find your vibe →`)
+        ? encodeURIComponent(`我的SBTI人格是 ${props.typeCode}（${props.typeLabel}）！快来测测你是哪种抽象人格 →`)
+        : encodeURIComponent(`My SBTI type is ${props.typeCode} (${props.typeLabel})! Find your vibe →`)
       const summary = encodeURIComponent(props.typeIntro || '')
 
       const shareUrls = {
@@ -213,11 +213,11 @@ export default defineComponent({
      function nativeShare() {
        if (navigator.share) {
          const title = isCN.value 
-           ? `SBTI - ${props.typeCode}（${props.typeCn}）`
-           : `SBTI - ${props.typeCode} (${props.typeCn})`
+          ? `SBTI - ${props.typeCode}（${props.typeLabel}）`
+          : `SBTI - ${props.typeCode} (${props.typeLabel})`
          const text = isCN.value
-           ? `我的SBTI人格是 ${props.typeCode}（${props.typeCn}）！${props.typeIntro}`
-           : `My SBTI type is ${props.typeCode} (${props.typeCn})! ${props.typeIntro}`
+          ? `我的SBTI人格是 ${props.typeCode}（${props.typeLabel}）！${props.typeIntro}`
+          : `My SBTI type is ${props.typeCode} (${props.typeLabel})! ${props.typeIntro}`
          navigator.share({
            title,
            text,

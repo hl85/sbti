@@ -175,7 +175,7 @@
       :visible="showShare"
       :version="currentVersion"
       :typeCode="result.finalType.code"
-      :typeCn="result.finalType.cn"
+      :typeLabel="isCN ? result.finalType.cn : result.finalType.en"
       :typeIntro="result.finalType.intro"
       :badge="result.badge"
       :posterUrl="isCN ? posterUrl : ''"

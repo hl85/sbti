@@ -46,7 +46,7 @@
          <div class="share-hero">
            <div class="share-badge">{{ isCN ? 'SBTI 人格测试' : 'SBTI Personality Test' }}</div>
            <div class="share-emoji">{{ getTypeEmoji(typeCode) }}</div>
-           <h1 class="share-type">{{ typeCode }}<span class="share-cn">（{{ typeData.cn }}）</span></h1>
+           <h1 class="share-type">{{ typeCode }}<span class="share-cn">{{ typeNameText }}</span></h1>
            <p class="share-intro">{{ typeData.intro }}</p>
          </div>
 
@@ -91,6 +91,7 @@ import { computed, defineComponent, ref, watch } from 'vue'
 import html2canvas from 'html2canvas'
 import { useRoute, useRouter } from 'vue-router'
 import { TYPE_LIBRARY } from '../data/sbtiData.js'
+import { TYPE_LIBRARY_EN } from '../data/sbtiDataEN.js'
 import { getClassicV1PosterUrl } from '../composables/useTypePoster.js'
 
 export default defineComponent({
@@ -104,7 +105,16 @@ export default defineComponent({
     const currentVersion = computed(() => route.params.version === 'cn' ? 'cn' : 'en')
     const isCN = computed(() => currentVersion.value === 'cn')
     const typeCode = computed(() => route.params.type)
-    const typeData = computed(() => TYPE_LIBRARY[typeCode.value] || null)
+    const activeTypeLibrary = computed(() => (isCN.value ? TYPE_LIBRARY : TYPE_LIBRARY_EN))
+    const typeData = computed(() => activeTypeLibrary.value[typeCode.value] || null)
+    const typeLabel = computed(() => {
+      if (!typeData.value) return ''
+      return isCN.value ? typeData.value.cn : typeData.value.en
+    })
+    const typeNameText = computed(() => {
+      if (!typeLabel.value) return ''
+      return isCN.value ? `（${typeLabel.value}）` : ` (${typeLabel.value})`
+    })
     const posterUrl = computed(() => (isCN.value ? getClassicV1PosterUrl(typeCode.value) : ''))
     const showPosterImage = computed(() => Boolean(isCN.value && posterUrl.value && !posterLoadFailed.value))
 
@@ -180,11 +190,11 @@ export default defineComponent({
      function nativeShare() {
        if (navigator.share) {
          const title = isCN.value 
-           ? `SBTI - ${typeCode.value}（${typeData.value?.cn}）`
-           : `SBTI - ${typeCode.value} (${typeData.value?.en || typeData.value?.cn})`
+          ? `SBTI - ${typeCode.value}（${typeLabel.value}）`
+          : `SBTI - ${typeCode.value} (${typeLabel.value})`
          const text = isCN.value
-           ? `我的SBTI人格是 ${typeCode.value}（${typeData.value?.cn}）！快来测测你是哪种 →`
-           : `My SBTI type is ${typeCode.value} (${typeData.value?.en || typeData.value?.cn})! Find yours →`
+          ? `我的SBTI人格是 ${typeCode.value}（${typeLabel.value}）！快来测测你是哪种 →`
+          : `My SBTI type is ${typeCode.value} (${typeLabel.value})! Find yours →`
          navigator.share({
            title,
            text,
@@ -208,7 +218,9 @@ export default defineComponent({
        showPosterImage,
        toastMsg,
        typeCode,
-       typeData
+      typeData,
+      typeLabel,
+      typeNameText
      }
   }
 })
