@@ -70,6 +70,7 @@ npm run dev
 
 ```bash
 npm run build
+npm run build:worker
 ```
 
 构建产物输出到：
@@ -88,8 +89,15 @@ dist/
 部署思路为：
 
 1. 使用 Vite 构建生成 `dist/`
-2. 由 Cloudflare Worker 提供静态资源
-3. 自定义域名绑定到 `sbti.funmbti.com`
+2. 运行 `npm run build:worker`，把最新 `dist/` 产物内联到 `sbti-app-worker.js`
+3. 由 Cloudflare Worker 提供静态资源
+4. 自定义域名绑定到 `sbti.funmbti.com`
+
+推荐直接使用：
+
+```bash
+npm run deploy
+```
 
 如果你要重新部署，请先确认：
 
