@@ -36,17 +36,9 @@
             <span class="dot"></span>
             <span>{{ isCN ? 'SBTI 经典分享页' : 'SBTI Share Card' }}</span>
           </div>
-          <div class="share-emoji">{{ getTypeEmoji(typeCode) }}</div>
-          <h1 class="share-type">{{ typeCode }}<span class="share-cn">{{ typeNameText }}</span></h1>
-          <p class="share-intro">{{ typeData.intro }}</p>
-
-          <div class="hero-actions">
-            <button class="btn-primary" @click="goTest">
-              {{ isCN ? '开始测试' : 'Take the Test' }}
-            </button>
-            <button class="btn-secondary" @click="copyLink">
-              {{ isCN ? '复制链接' : 'Copy Link' }}
-            </button>
+          <div class="share-title-row">
+            <div class="share-emoji">{{ getTypeEmoji(typeCode) }}</div>
+            <h1 class="share-type">{{ typeCode }}<span class="share-cn">{{ typeNameText }}</span></h1>
           </div>
         </div>
       </section>
@@ -70,8 +62,8 @@
             <div v-else class="share-fallback-cn">
               <div class="fallback-code">{{ typeCode }}</div>
               <div class="fallback-name">{{ typeData.cn }}</div>
-              <p class="fallback-intro">{{ typeData.intro }}</p>
             </div>
+            <p class="poster-intro">{{ typeData.intro }}</p>
           </div>
 
           <div class="info-column">
@@ -120,8 +112,8 @@
             <div v-else class="share-fallback-cn">
               <div class="fallback-code">{{ typeCode }}</div>
               <div class="fallback-name">{{ typeLabel }}</div>
-              <p class="fallback-intro">{{ typeData.intro }}</p>
             </div>
+            <p class="poster-intro">{{ typeData.intro }}</p>
           </div>
 
           <div class="info-column">
@@ -488,8 +480,16 @@ export default defineComponent({
 
 .share-emoji {
   font-size: 64px;
-  margin-bottom: 12px;
+  margin: 0;
   position: relative;
+  line-height: 1;
+}
+
+.share-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
 }
 
 .share-type {
@@ -504,22 +504,6 @@ export default defineComponent({
   font-size: 0.5em;
   font-weight: 600;
   color: #a8d5b0;
-}
-
-.share-intro {
-  font-size: 15px;
-  color: rgba(255,255,255,0.65);
-  margin: 12px 0 0;
-  line-height: 1.6;
-  position: relative;
-  max-width: 640px;
-}
-
-.hero-actions {
-  margin-top: 28px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
 }
 
 .btn-primary,
@@ -622,8 +606,10 @@ export default defineComponent({
     radial-gradient(circle at top right, rgba(127, 165, 134, 0.16), rgba(127, 165, 134, 0) 40%),
     linear-gradient(180deg, #ffffff, #f4f8f4);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
 }
 
 .share-image-cn {
@@ -638,7 +624,8 @@ export default defineComponent({
 .poster-media {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: auto;
+  flex: 0 0 auto;
   min-height: 360px;
   border-radius: 14px;
   overflow: hidden;
@@ -706,6 +693,15 @@ export default defineComponent({
 .fallback-intro {
   margin-top: 14px !important;
   color: var(--share-muted) !important;
+}
+
+.poster-intro {
+  margin: 14px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2f24;
+  line-height: 1.4;
+  text-align: left;
 }
 
 .share-actions-bar {
