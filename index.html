@@ -28,25 +28,14 @@
       }
     </style>
 
-    <!-- GA4 延迟加载 -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8YXGEKL3PF"></script>
     <script>
-      window.addEventListener('load', function() {
-        const GA_ID = 'G-8YXGEKL3PF';
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        window.gtag = gtag;
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-        gtag('js', new Date());
-        gtag('config', GA_ID, {
-          send_page_view: true,
-          anonymize_ip: true
-        });
-
-        const gaScript = document.createElement('script');
-        gaScript.async = true;
-        gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-        document.head.appendChild(gaScript);
-      });
+      gtag('config', 'G-8YXGEKL3PF');
     </script>
   </head>
   <body>
