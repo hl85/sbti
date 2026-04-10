@@ -27,6 +27,27 @@
         -moz-osx-font-smoothing: grayscale;
       }
     </style>
+
+    <!-- GA4 延迟加载 -->
+    <script>
+      window.addEventListener('load', function() {
+        const GA_ID = 'G-8YXGEKL3PF';
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+
+        gtag('js', new Date());
+        gtag('config', GA_ID, {
+          send_page_view: true,
+          anonymize_ip: true
+        });
+
+        const gaScript = document.createElement('script');
+        gaScript.async = true;
+        gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+        document.head.appendChild(gaScript);
+      });
+    </script>
   </head>
   <body>
     <div id="app"></div>
