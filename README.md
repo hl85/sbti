@@ -115,3 +115,5 @@ npm run deploy
 
 - 原始传播来源之一：[B站 @蛆肉儿串儿](https://space.bilibili.com/417038183)
 - 公开参考资料见站内 `/what-is-sbti` 页面
+- **本项目最早复刻自**：[Chapoii/sbti](https://github.com/Chapoii/sbti)
+- **本项目仅供学习交流，请勿用于商业用途**
