@@ -54,13 +54,19 @@
       <template v-if="isCN">
         <section class="share-layout-cn">
           <div class="section-card poster-card" :class="{ 'poster-card-fallback': !showPosterImage }">
-            <img
-              v-if="showPosterImage"
-              :src="posterUrl"
-              :alt="`${typeCode} 人格海报`"
-              class="share-image-cn"
-              @error="handlePosterError"
-            />
+            <div v-if="showPosterImage" class="poster-media">
+              <div class="poster-overlay">
+                <div class="poster-line-2">{{ typeLabel }}</div>
+                <div class="poster-line-3">{{ typeCode }}</div>
+              </div>
+              <img
+                :src="posterUrl"
+                :alt="`${typeCode} 人格海报`"
+                class="share-image-cn"
+                crossorigin="anonymous"
+                @error="handlePosterError"
+              />
+            </div>
             <div v-else class="share-fallback-cn">
               <div class="fallback-code">{{ typeCode }}</div>
               <div class="fallback-name">{{ typeData.cn }}</div>
@@ -96,29 +102,49 @@
       </template>
 
       <template v-else>
-        <section class="share-content">
-          <div class="section-card section-card-wide">
-            <h3>📖 Type Breakdown</h3>
-            <p>{{ typeData.desc }}</p>
+        <section class="share-layout-cn">
+          <div class="section-card poster-card" :class="{ 'poster-card-fallback': !showPosterImage }">
+            <div v-if="showPosterImage" class="poster-media">
+              <div class="poster-overlay">
+                <div class="poster-line-2">{{ typeLabel }}</div>
+                <div class="poster-line-3">{{ typeCode }}</div>
+              </div>
+              <img
+                :src="posterUrl"
+                :alt="`${typeCode} poster`"
+                class="share-image-cn"
+                crossorigin="anonymous"
+                @error="handlePosterError"
+              />
+            </div>
+            <div v-else class="share-fallback-cn">
+              <div class="fallback-code">{{ typeCode }}</div>
+              <div class="fallback-name">{{ typeLabel }}</div>
+              <p class="fallback-intro">{{ typeData.intro }}</p>
+            </div>
           </div>
 
-          <div class="share-grid">
+          <div class="info-column">
             <div class="section-card">
-              <h3>⚡ Share It</h3>
-              <p>Drop this link in the group chat, save the card, or let your browser do the heavy lifting.</p>
+              <h3>Type Breakdown</h3>
+              <p>{{ typeData.desc }}</p>
+            </div>
+
+            <div class="section-card">
+              <h3>Share Actions</h3>
               <div class="share-actions-bar">
-                <button class="share-action-btn" @click="copyLink">🔗 Copy Link</button>
-                <button class="share-action-btn share-action-btn-primary" @click="exportCard">📸 Save Image</button>
-                <button class="share-action-btn" @click="nativeShare">🚀 Share</button>
+                <button class="share-action-btn" @click="copyLink">Copy Link</button>
+                <button class="share-action-btn share-action-btn-primary" @click="exportCard">Save Image</button>
+                <button class="share-action-btn" @click="nativeShare">Share</button>
               </div>
             </div>
 
             <div class="section-card">
-              <h3>🧠 What&apos;s your vibe?</h3>
+              <h3>Keep Exploring</h3>
               <p>Send this to a friend, then make them take the test too. Group chat lore writes itself.</p>
               <div class="section-actions">
                 <button class="pill-btn pill-btn-primary" @click="goTest">Take the Test</button>
-                <button class="pill-btn" @click="switchVersion('cn')">See CN Edition</button>
+                <button class="pill-btn" @click="switchVersion('cn')">CN Edition</button>
               </div>
             </div>
           </div>
@@ -173,8 +199,8 @@ export default defineComponent({
       if (!typeLabel.value) return ''
       return isCN.value ? `（${typeLabel.value}）` : ` (${typeLabel.value})`
     })
-    const posterUrl = computed(() => (isCN.value ? getClassicV1PosterUrl(typeCode.value) : ''))
-    const showPosterImage = computed(() => Boolean(isCN.value && posterUrl.value && !posterLoadFailed.value))
+    const posterUrl = computed(() => getClassicV1PosterUrl(typeCode.value))
+    const showPosterImage = computed(() => Boolean(posterUrl.value && !posterLoadFailed.value))
 
     watch([typeCode, posterUrl, isCN], () => {
       posterLoadFailed.value = false
@@ -602,9 +628,54 @@ export default defineComponent({
 
 .share-image-cn {
   width: 100%;
-  height: 100%;
-  max-height: 640px;
+  height: auto;
+  max-height: 480px;
   object-fit: contain;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.poster-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px 12px 10px;
+}
+
+.poster-overlay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  pointer-events: none;
+  margin-bottom: 10px;
+}
+
+.poster-line-2 {
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: rgba(30, 42, 34, 0.92);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+  max-width: 100%;
+  line-height: 1.08;
+}
+
+.poster-line-3 {
+  font-size: clamp(26px, 2.6vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--share-accent-strong);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
 }
 
 .share-fallback-cn {
@@ -791,6 +862,18 @@ export default defineComponent({
   .poster-card {
     min-height: 300px;
     padding: 14px;
+  }
+
+  .poster-media {
+    padding: 12px 10px 8px;
+  }
+
+  .poster-line-2 {
+    font-size: clamp(24px, 8vw, 34px);
+  }
+
+  .poster-line-3 {
+    font-size: clamp(22px, 7vw, 30px);
   }
 }
 </style>

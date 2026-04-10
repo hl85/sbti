@@ -5,13 +5,19 @@
         <div class="result-layout-cn">
           <div class="result-top-cn">
             <div class="poster-box-cn" :class="{ 'poster-box-cn--fallback': !showPosterImage }">
-              <img
-                v-if="showPosterImage"
-                :src="posterUrl"
-                :alt="`${result.finalType.code} 人格海报`"
-                class="poster-image-cn"
-                @error="handlePosterError"
-              />
+              <div v-if="showPosterImage" class="poster-media">
+                <div class="poster-overlay">
+                  <div class="poster-line-2">{{ result.finalType.cn }}</div>
+                  <div class="poster-line-3">{{ result.finalType.code }}</div>
+                </div>
+                <img
+                  :src="posterUrl"
+                  :alt="`${result.finalType.code} 人格海报`"
+                  class="poster-image-cn"
+                  crossorigin="anonymous"
+                  @error="handlePosterError"
+                />
+              </div>
               <div v-else class="poster-fallback-cn">
                 <div class="poster-code-cn">{{ result.finalType.code }}</div>
                 <div class="poster-cn-cn">{{ result.finalType.cn }}</div>
@@ -93,8 +99,25 @@
           </div>
           <div class="poster-section">
             <div class="poster-card">
-              <div class="poster-emoji">{{ getTypeEmoji(result.finalType.code) }}</div>
-              <p class="poster-intro">{{ result.finalType.intro }}</p>
+              <template v-if="showPosterImage">
+                <div class="poster-media">
+                  <div class="poster-overlay">
+                    <div class="poster-line-2">{{ result.finalType.en || result.finalType.cn }}</div>
+                    <div class="poster-line-3">{{ result.finalType.code }}</div>
+                  </div>
+                  <img
+                    :src="posterUrl"
+                    :alt="`${result.finalType.code} poster`"
+                    class="poster-image"
+                    crossorigin="anonymous"
+                    @error="handlePosterError"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <div class="poster-emoji">{{ getTypeEmoji(result.finalType.code) }}</div>
+                <p class="poster-intro">{{ result.finalType.intro }}</p>
+              </template>
             </div>
           </div>
         </div>
@@ -178,7 +201,7 @@
       :typeLabel="isCN ? result.finalType.cn : result.finalType.en"
       :typeIntro="result.finalType.intro"
       :badge="result.badge"
-      :posterUrl="isCN ? posterUrl : ''"
+      :posterUrl="posterUrl"
       @close="showShare = false"
     />
   </div>
@@ -209,8 +232,8 @@ export default defineComponent({
 
     const currentVersion = computed(() => route.params.version === 'cn' ? 'cn' : 'en')
     const isCN = computed(() => currentVersion.value === 'cn')
-    const posterUrl = computed(() => (isCN.value && result.value ? getClassicV1PosterUrl(result.value.finalType.code) : ''))
-    const showPosterImage = computed(() => Boolean(isCN.value && posterUrl.value && !posterLoadFailed.value))
+    const posterUrl = computed(() => (result.value ? getClassicV1PosterUrl(result.value.finalType.code) : ''))
+    const showPosterImage = computed(() => Boolean(posterUrl.value && !posterLoadFailed.value))
      const noteText = computed(() => {
        if (isCN.value) {
          return result.value?.special
@@ -350,13 +373,66 @@ export default defineComponent({
 
 .poster-image-cn {
   width: 100%;
-  height: 100%;
-  max-height: 520px;
+  height: auto;
+  max-height: 430px;
   object-fit: contain;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.72);
   position: relative;
   z-index: 1;
+}
+
+.poster-image {
+  width: 100%;
+  height: auto;
+  max-height: 340px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.poster-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px 12px 10px;
+}
+
+.poster-overlay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  pointer-events: none;
+  margin-bottom: 10px;
+}
+
+.poster-line-2 {
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: rgba(30, 42, 34, 0.92);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+  line-height: 1.08;
+  max-width: 100%;
+}
+
+.poster-line-3 {
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--result-accent-strong);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
 }
 
 .poster-fallback-cn {
@@ -473,9 +549,11 @@ export default defineComponent({
 
 .poster-card {
   width: 100%;
-  background: linear-gradient(135deg, #1a2e23, #2d4a3a);
+  background:
+    radial-gradient(circle at top right, rgba(127, 165, 134, 0.2), rgba(127, 165, 134, 0) 42%),
+    linear-gradient(180deg, #ffffff, #f4f8f4);
   border-radius: 20px;
-  padding: 32px 20px;
+  padding: 18px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -500,7 +578,7 @@ export default defineComponent({
 
 .poster-intro {
   font-size: 14px;
-  color: rgba(255,255,255,0.7);
+  color: var(--result-muted);
   line-height: 1.6;
   position: relative;
 }
@@ -835,6 +913,18 @@ export default defineComponent({
   .poster-box-cn {
     grid-template-rows: minmax(240px, 1fr) auto;
     padding: 14px;
+  }
+
+  .poster-media {
+    padding: 12px 10px 8px;
+  }
+
+  .poster-line-2 {
+    font-size: clamp(24px, 8vw, 34px);
+  }
+
+  .poster-line-3 {
+    font-size: clamp(22px, 7vw, 30px);
   }
 }
 </style>

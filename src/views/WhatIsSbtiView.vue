@@ -59,9 +59,11 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import qiluShot from '../assets/qilu.png'
-import krShot from '../assets/36kr.png'
-import biliShot from '../assets/bili.png'
+
+const ASSET_CDN_BASE = 'https://cdn.jsdelivr.net/gh/hl85/sbti@v0.5.0/src/assets'
+const qiluShot = `${ASSET_CDN_BASE}/qilu.png`
+const krShot = `${ASSET_CDN_BASE}/36kr.png`
+const biliShot = `${ASSET_CDN_BASE}/bili.png`
 
 const router = useRouter()
 const lang = ref('zh')

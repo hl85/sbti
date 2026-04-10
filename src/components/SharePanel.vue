@@ -7,45 +7,37 @@
       </div>
 
       <div class="share-preview" ref="shareCardRef">
-        <div v-if="isCN" class="preview-bg preview-bg-cn">
+        <div class="preview-bg preview-bg-cn">
           <div class="preview-classic-cn">
             <div class="preview-poster-cn" :class="{ 'preview-poster-cn--fallback': !showPosterImage }">
-              <img
-                v-if="showPosterImage"
-                :src="posterUrl"
-                :alt="`${typeCode} 分享海报`"
-                class="preview-image-cn"
-                @error="handlePosterError"
-              />
+              <div v-if="showPosterImage" class="preview-media">
+                <div class="poster-overlay">
+                  <div class="poster-line-2">{{ typeLabel }}</div>
+                  <div class="poster-line-3">{{ typeCode }}</div>
+                </div>
+                <img
+                  :src="posterUrl"
+                  :alt="`${typeCode} 分享海报`"
+                  class="preview-image-cn"
+                  crossorigin="anonymous"
+                  @error="handlePosterError"
+                />
+              </div>
               <div v-else class="preview-fallback-cn">
                 <div class="preview-type preview-type-cn">{{ typeCode }}</div>
                 <div class="preview-cn preview-cn-cn">{{ typeLabel }}</div>
               </div>
             </div>
             <div class="preview-info-cn">
-              <div class="preview-badge preview-badge-cn">SBTI 人格测试</div>
+              <div class="preview-badge preview-badge-cn">{{ isCN ? 'SBTI 人格测试' : 'SBTI Personality Test' }}</div>
               <div class="preview-type preview-type-cn">{{ typeCode }}</div>
               <div class="preview-cn preview-cn-cn">{{ typeLabel }}</div>
               <div class="preview-intro preview-intro-cn">{{ typeIntro }}</div>
               <div class="preview-match preview-match-cn">{{ badge }}</div>
-              <div class="preview-footer preview-footer-cn">经典结果图风格分享页</div>
+              <div class="preview-footer preview-footer-cn">{{ isCN ? '经典结果图风格分享页' : 'Classic share card style' }}</div>
             </div>
           </div>
         </div>
-
-         <div v-else class="preview-bg">
-           <div class="preview-deco"></div>
-           <div class="preview-content">
-             <div class="preview-badge">{{ isCN ? 'SBTI 人格测试' : 'SBTI Personality Test' }}</div>
-             <div class="preview-type">{{ typeCode }}</div>
-             <div class="preview-cn">{{ typeLabel }}</div>
-             <div class="preview-intro">{{ typeIntro }}</div>
-             <div class="preview-match">{{ badge }}</div>
-             <div class="preview-footer">
-               <span>{{ isCN ? '扫码或访问链接查看详情 →' : 'Scan QR or visit link for details →' }}</span>
-             </div>
-           </div>
-         </div>
       </div>
 
         <div class="share-actions">
@@ -124,7 +116,7 @@ export default defineComponent({
      const posterLoadFailed = ref(false)
 
      const isCN = computed(() => props.version === 'cn')
-     const showPosterImage = computed(() => isCN.value && props.posterUrl && !posterLoadFailed.value)
+    const showPosterImage = computed(() => Boolean(props.posterUrl && !posterLoadFailed.value))
 
     watch(
       () => [props.visible, props.posterUrl, props.typeCode, props.version],
@@ -353,8 +345,49 @@ export default defineComponent({
 
 .preview-image-cn {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 320px;
   object-fit: contain;
+}
+
+.preview-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 8px 8px;
+}
+
+.poster-overlay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+  pointer-events: none;
+  margin-bottom: 8px;
+}
+
+.poster-line-2 {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: rgba(30, 42, 34, 0.92);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+  line-height: 1.08;
+  max-width: 100%;
+}
+
+.poster-line-3 {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #4d6a53;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
 }
 
 .preview-fallback-cn {
@@ -594,6 +627,14 @@ export default defineComponent({
 
   .preview-poster-cn {
     min-height: 280px;
+  }
+
+  .poster-line-2 {
+    font-size: 20px;
+  }
+
+  .poster-line-3 {
+    font-size: 18px;
   }
 }
 

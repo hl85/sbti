@@ -73,8 +73,8 @@
           <h2 class="section-title">{{ isCN ? '全部人格' : 'All Types' }}</h2>
           <p class="section-copy">
             {{ isCN
-              ? '点击卡片即可快速浏览每种人格的设定、短句与正文描述。'
-              : 'Scroll the full roster and skim each type’s label, hook, and long-form copy.' }}
+              ? '点击人格形象卡片，快速查看并跳转到对应分享页。'
+              : 'Browse visual type cards and jump to each share page in one tap.' }}
           </p>
         </div>
         <button class="section-link" @click="goHome">
@@ -94,13 +94,24 @@
             <span class="card-link">{{ isCN ? '查看分享页' : 'Open Share' }}</span>
           </div>
 
+          <div class="card-poster">
+            <div class="card-overlay">
+              <div class="overlay-line-2">{{ isCN ? item.cn : item.en }}</div>
+              <div class="overlay-line-3">{{ item.code }}</div>
+            </div>
+            <img
+              :src="getClassicV1PosterUrl(item.code)"
+              :alt="`${item.code} poster`"
+              class="card-image"
+              crossorigin="anonymous"
+            />
+          </div>
+
           <div class="card-name-block">
-            <h3 class="type-name">{{ isCN ? item.cn : item.en }}</h3>
-            <p v-if="!isCN" class="type-subname">{{ item.cn }}</p>
+            <h3 class="type-name">{{ item.code }}<span class="type-subname-inline">{{ isCN ? `（${item.cn}）` : ` (${item.en})` }}</span></h3>
           </div>
 
           <p class="card-intro">{{ item.intro }}</p>
-          <p class="card-desc">{{ item.desc }}</p>
         </article>
       </div>
     </section>
@@ -112,6 +123,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { TYPE_LIBRARY } from '../data/sbtiData.js'
 import { TYPE_LIBRARY_EN } from '../data/sbtiDataEN.js'
+import { getClassicV1PosterUrl } from '../composables/useTypePoster.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -400,7 +412,7 @@ const goShare = (code) => {
   background: #fff;
   border-radius: 22px;
   border: 1px solid var(--gallery-line);
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 8px 32px rgba(47, 73, 55, 0.06);
   transition: all 0.25s ease;
   display: flex;
@@ -420,7 +432,7 @@ const goShare = (code) => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .type-code {
@@ -441,7 +453,7 @@ const goShare = (code) => {
 }
 
 .card-name-block {
-  margin-bottom: 12px;
+  margin-top: 12px;
 }
 
 .type-name {
@@ -453,26 +465,72 @@ const goShare = (code) => {
   color: var(--gallery-text);
 }
 
-.type-subname {
-  margin: 8px 0 0;
-  font-size: 13px;
+.type-subname-inline {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--gallery-muted);
 }
 
 .card-intro {
-  margin: 0 0 14px;
+  margin: 10px 0 0;
   font-size: 14px;
-  line-height: 1.75;
-  color: var(--gallery-accent-strong);
+  line-height: 1.7;
+  color: #304034;
   font-weight: 600;
 }
 
-.card-desc {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.85;
-  color: #304034;
-  flex-grow: 1;
+.card-poster {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  min-height: 0;
+  background:
+    radial-gradient(circle at top right, rgba(127, 165, 134, 0.16), rgba(127, 165, 134, 0) 42%),
+    linear-gradient(180deg, #ffffff, #f4f8f4);
+  border: 1px solid var(--gallery-line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px 12px 10px;
+}
+
+.card-image {
+  width: 100%;
+  height: auto;
+  max-height: 340px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.card-overlay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  pointer-events: none;
+  margin-bottom: 10px;
+}
+
+.overlay-line-2 {
+  font-size: clamp(28px, 2.4vw, 38px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: rgba(30, 42, 34, 0.92);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+  line-height: 1.08;
+  max-width: 100%;
+}
+
+.overlay-line-3 {
+  font-size: clamp(26px, 2.1vw, 34px);
+  font-weight: 900;
+  color: var(--gallery-accent-strong);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+  line-height: 1.05;
 }
 
 @media (max-width: 760px) {
@@ -497,6 +555,18 @@ const goShare = (code) => {
 
   .cards-grid {
     grid-template-columns: 1fr;
+  }
+
+  .card-poster {
+    padding: 12px 10px 8px;
+  }
+
+  .overlay-line-2 {
+    font-size: clamp(24px, 8vw, 34px);
+  }
+
+  .overlay-line-3 {
+    font-size: clamp(22px, 7vw, 30px);
   }
 }
 </style>

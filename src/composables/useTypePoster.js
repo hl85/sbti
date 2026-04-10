@@ -1,8 +1,6 @@
-const CLASSIC_V1_POSTER_BASE = 'https://cdn.jsdelivr.net/gh/UnluckyNinja/SBTI-test@main/image'
+const CLASSIC_V1_POSTER_BASE = 'https://cdn.jsdelivr.net/gh/hl85/sbti@v0.5.0/src/assets'
 
 const CLASSIC_V1_POSTER_FILES = {
-  'Dior-s': 'Dior-s.jpg',
-  'JOKE-R': 'JOKE-R.jpg',
   'WOC!': 'WOC.png'
 }
 
