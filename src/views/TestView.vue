@@ -2,34 +2,34 @@
   <div class="test-page">
     <div class="test-card">
       <!-- 顶部进度条 -->
-      <div class="topbar">
-        <div class="progress-wrap">
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: progress.percent + '%' }"></div>
-          </div>
-          <span class="progress-text">{{ progress.done }} / {{ progress.total }}</span>
-        </div>
-        <button class="btn-back" @click="goHome">← 返回</button>
-      </div>
+       <div class="topbar">
+         <div class="progress-wrap">
+           <div class="progress-bar">
+             <div class="progress-fill" :style="{ width: progress.percent + '%' }"></div>
+           </div>
+           <span class="progress-text">{{ progress.done }} / {{ progress.total }}</span>
+         </div>
+         <button class="btn-back" @click="goHome">← {{ isCN ? '返回' : 'Back' }}</button>
+       </div>
 
-      <!-- 提示语 -->
-      <div class="hint-bar" :class="{ complete: isComplete }">
-        <span v-if="isComplete">✨ 都做完了。现在可以把你的电子魂魄交给结果页审判。</span>
-        <span v-else>💡 全选完才会放行。世界已经够乱了，起码把题做完整。</span>
-      </div>
+       <!-- 提示语 -->
+       <div class="hint-bar" :class="{ complete: isComplete }">
+         <span v-if="isComplete">✨ {{ isCN ? '都做完了。现在可以把你的电子魂魄交给结果页审判。' : 'All done! Time to send your digital soul to the verdict.' }}</span>
+         <span v-else>💡 {{ isCN ? '全选完才会放行。世界已经够乱了，起码把题做完整。' : 'Answer all questions. The world is chaotic enough - finish what you started.' }}</span>
+       </div>
 
-      <!-- 题目列表 -->
-      <div class="question-list">
-        <div
-          v-for="(q, index) in visibleQuestions"
-          :key="q.id"
-          class="question-card"
-          :class="{ answered: answers[q.id] !== undefined }"
-        >
-          <div class="question-meta">
-            <span class="q-badge">第 {{ index + 1 }} 题</span>
-            <span class="q-dim">{{ q.special ? '补充题' : '维度已隐藏' }}</span>
-          </div>
+       <!-- 题目列表 -->
+       <div class="question-list">
+         <div
+           v-for="(q, index) in visibleQuestions"
+           :key="q.id"
+           class="question-card"
+           :class="{ answered: answers[q.id] !== undefined }"
+         >
+           <div class="question-meta">
+             <span class="q-badge">{{ isCN ? '第' : '' }} {{ index + 1 }} {{ isCN ? '题' : isCN ? '' : 'Question' }}</span>
+             <span class="q-dim">{{ isCN ? (q.special ? '补充题' : '维度已隐藏') : (q.special ? 'Bonus Question' : 'Dimension Hidden') }}</span>
+           </div>
           <div class="question-text">{{ q.text }}</div>
           <div class="options">
             <label
@@ -55,25 +55,27 @@
         </div>
       </div>
 
-      <!-- 底部操作 -->
-      <div class="actions-bottom">
-        <button class="btn-submit" :disabled="!isComplete" @click="submitResult">
-          <span v-if="isComplete">提交并查看结果 →</span>
-          <span v-else>还有 {{ progress.total - progress.done }} 题未完成</span>
-        </button>
-      </div>
+       <!-- 底部操作 -->
+       <div class="actions-bottom">
+         <button class="btn-submit" :disabled="!isComplete" @click="submitResult">
+           <span v-if="isComplete">{{ isCN ? '提交并查看结果 →' : 'Submit & See Results →' }}</span>
+           <span v-else>{{ isCN ? `还有 ${progress.total - progress.done} 题未完成` : `${progress.total - progress.done} questions remaining` }}</span>
+         </button>
+       </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useSBTI } from '../composables/useSBTI.js'
 
 const router = useRouter()
-const { answers, shuffledQuestions, getVisibleQuestions, progress, isComplete, startTest, setAnswer, computeResult } = useSBTI()
-
+const route = useRoute()
+const currentVersion = computed(() => route.params.version === 'cn' ? 'cn' : 'en')
+const { answers, shuffledQuestions, getVisibleQuestions, progress, isComplete, startTest, setAnswer, computeResult } = useSBTI(currentVersion)
+const isCN = computed(() => currentVersion.value === 'cn')
 const visibleQuestions = computed(() => getVisibleQuestions())
 
 onMounted(() => {
@@ -88,11 +90,11 @@ function submitResult() {
   const result = computeResult()
   // 将结果存入 sessionStorage 以便结果页使用
   sessionStorage.setItem('sbti_result', JSON.stringify(result))
-  router.push('/result')
+  router.push(`/${route.params.version || 'en'}/result`)
 }
 
 function goHome() {
-  router.push('/')
+  router.push(`/${route.params.version || 'en'}`)
 }
 </script>
 

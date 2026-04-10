@@ -1,8 +1,12 @@
-import { ref, computed } from 'vue'
+import { ref, computed, unref } from 'vue'
 import {
   questions, specialQuestions, TYPE_LIBRARY, NORMAL_TYPES,
   dimensionMeta, dimensionOrder, DIM_EXPLANATIONS
 } from '../data/sbtiData.js'
+import {
+  questionsEN, specialQuestionsEN, TYPE_LIBRARY_EN,
+  dimensionMetaEN, DIM_EXPLANATIONS_EN
+} from '../data/sbtiDataEN.js'
 
 const answers = ref({})
 const shuffledQuestions = ref([])
@@ -14,15 +18,6 @@ function shuffle(array) {
     [arr[i], arr[j]] = [arr[j], arr[i]]
   }
   return arr
-}
-
-function getVisibleQuestions() {
-  const visible = [...shuffledQuestions.value]
-  const gateIndex = visible.findIndex(q => q.id === 'drink_gate_q1')
-  if (gateIndex !== -1 && answers.value['drink_gate_q1'] === 3) {
-    visible.splice(gateIndex + 1, 0, specialQuestions[1])
-  }
-  return visible
 }
 
 function sumToLevel(score) {
@@ -39,7 +34,23 @@ function parsePattern(pattern) {
   return pattern.replace(/-/g, '').split('')
 }
 
-export function useSBTI() {
+export function useSBTI(version = 'cn') {
+  const isCN = computed(() => unref(version) === 'cn')
+  const activeQuestions = computed(() => (isCN.value ? questions : questionsEN))
+  const activeSpecialQuestions = computed(() => (isCN.value ? specialQuestions : specialQuestionsEN))
+  const activeTypeLibrary = computed(() => (isCN.value ? TYPE_LIBRARY : TYPE_LIBRARY_EN))
+  const activeDimensionMeta = computed(() => (isCN.value ? dimensionMeta : dimensionMetaEN))
+  const activeDimExplanations = computed(() => (isCN.value ? DIM_EXPLANATIONS : DIM_EXPLANATIONS_EN))
+
+  function getVisibleQuestions() {
+    const visible = [...shuffledQuestions.value]
+    const gateIndex = visible.findIndex(q => q.id === 'drink_gate_q1')
+    if (gateIndex !== -1 && answers.value['drink_gate_q1'] === 3) {
+      visible.splice(gateIndex + 1, 0, activeSpecialQuestions.value[1])
+    }
+    return visible
+  }
+
   const progress = computed(() => {
     const visible = getVisibleQuestions()
     const total = visible.length
@@ -54,11 +65,11 @@ export function useSBTI() {
 
   function startTest() {
     answers.value = {}
-    const shuffled = shuffle(questions)
+    const shuffled = shuffle(activeQuestions.value)
     const insertIndex = Math.floor(Math.random() * shuffled.length) + 1
     shuffledQuestions.value = [
       ...shuffled.slice(0, insertIndex),
-      specialQuestions[0],
+      activeSpecialQuestions.value[0],
       ...shuffled.slice(insertIndex)
     ]
   }
@@ -73,9 +84,9 @@ export function useSBTI() {
   function computeResult() {
     const rawScores = {}
     const levels = {}
-    Object.keys(dimensionMeta).forEach(dim => { rawScores[dim] = 0 })
+    Object.keys(activeDimensionMeta.value).forEach(dim => { rawScores[dim] = 0 })
 
-    questions.forEach(q => {
+    activeQuestions.value.forEach(q => {
       rawScores[q.dim] += Number(answers.value[q.id] || 0)
     })
 
@@ -94,7 +105,7 @@ export function useSBTI() {
         if (diff === 0) exact += 1
       }
       const similarity = Math.max(0, Math.round((1 - distance / 30) * 100))
-      return { ...type, ...TYPE_LIBRARY[type.code], distance, exact, similarity }
+      return { ...type, ...activeTypeLibrary.value[type.code], distance, exact, similarity }
     }).sort((a, b) => {
       if (a.distance !== b.distance) return a.distance - b.distance
       if (b.exact !== a.exact) return b.exact - a.exact
@@ -107,32 +118,42 @@ export function useSBTI() {
     let finalType, modeKicker, badge, sub, special = false, secondaryType = null
 
     if (drunkTriggered) {
-      finalType = TYPE_LIBRARY.DRUNK
+      finalType = activeTypeLibrary.value.DRUNK
       secondaryType = bestNormal
-      modeKicker = '隐藏人格已激活'
-      badge = '匹配度 100% · 酒精异常因子已接管'
-      sub = '乙醇亲和性过强，系统已直接跳过常规人格审判。'
+      modeKicker = isCN.value ? '隐藏人格已激活' : 'Hidden Type Activated'
+      badge = isCN.value ? '匹配度 100% · 酒精异常因子已接管' : '100% Match · Alcohol Override Engaged'
+      sub = isCN.value
+        ? '乙醇亲和性过强，系统已直接跳过常规人格审判。'
+        : 'Your ethanol affinity is too strong. The system skipped normal personality judgment.'
       special = true
     } else if (bestNormal.similarity < 60) {
-      finalType = TYPE_LIBRARY.HHHH
-      modeKicker = '系统强制兜底'
-      badge = `标准人格库最高匹配仅 ${bestNormal.similarity}%`
-      sub = '标准人格库对你的脑回路集体罢工了，于是系统把你强制分配给了 HHHH。'
+      finalType = activeTypeLibrary.value.HHHH
+      modeKicker = isCN.value ? '系统强制兜底' : 'System Fallback'
+      badge = isCN.value
+        ? `标准人格库最高匹配仅 ${bestNormal.similarity}%`
+        : `Highest standard match: ${bestNormal.similarity}%`
+      sub = isCN.value
+        ? '标准人格库对你的脑回路集体罢工了，于是系统把你强制分配给了 HHHH。'
+        : 'Your brainwave pattern broke the standard library, so the system force-assigned HHHH.'
       special = true
     } else {
       finalType = bestNormal
-      modeKicker = '你的主类型'
-      badge = `匹配度 ${bestNormal.similarity}% · 精准命中 ${bestNormal.exact}/15 维`
-      sub = '维度命中度较高，当前结果可视为你的第一人格画像。'
+      modeKicker = isCN.value ? '你的主类型' : 'Your Primary Type'
+      badge = isCN.value
+        ? `匹配度 ${bestNormal.similarity}% · 精准命中 ${bestNormal.exact}/15 维`
+        : `Match ${bestNormal.similarity}% · Exact Hit ${bestNormal.exact}/15`
+      sub = isCN.value
+        ? '维度命中度较高，当前结果可视为你的第一人格画像。'
+        : 'Your dimensions align strongly. This can be treated as your primary profile.'
     }
 
     const dimDetails = dimensionOrder.map(dim => ({
       dim,
-      name: dimensionMeta[dim].name,
-      model: dimensionMeta[dim].model,
+      name: activeDimensionMeta.value[dim].name,
+      model: activeDimensionMeta.value[dim].model,
       level: levels[dim],
       score: rawScores[dim],
-      explanation: DIM_EXPLANATIONS[dim][levels[dim]]
+      explanation: activeDimExplanations.value[dim][levels[dim]]
     }))
 
     return {

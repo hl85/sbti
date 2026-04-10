@@ -1,72 +1,94 @@
 <template>
   <div class="share-overlay" v-if="visible" @click.self="$emit('close')">
-    <div class="share-panel">
+    <div class="share-panel" :class="{ 'share-panel-cn': isCN }">
       <div class="panel-header">
-        <h3>分享我的SBTI</h3>
+        <h3>{{ isCN ? '分享经典结果页' : '分享我的SBTI' }}</h3>
         <button class="close-btn" @click="$emit('close')">✕</button>
       </div>
 
-      <!-- 分享卡片预览 -->
       <div class="share-preview" ref="shareCardRef">
-        <div class="preview-bg">
-          <div class="preview-deco"></div>
-          <div class="preview-content">
-            <div class="preview-badge">SBTI 人格测试</div>
-            <div class="preview-type">{{ typeCode }}</div>
-            <div class="preview-cn">{{ typeCn }}</div>
-            <div class="preview-intro">{{ typeIntro }}</div>
-            <div class="preview-match">{{ badge }}</div>
-            <div class="preview-footer">
-              <span>扫码或访问链接查看详情 →</span>
+        <div v-if="isCN" class="preview-bg preview-bg-cn">
+          <div class="preview-classic-cn">
+            <div class="preview-poster-cn" :class="{ 'preview-poster-cn--fallback': !showPosterImage }">
+              <img
+                v-if="showPosterImage"
+                :src="posterUrl"
+                :alt="`${typeCode} 分享海报`"
+                class="preview-image-cn"
+                @error="handlePosterError"
+              />
+              <div v-else class="preview-fallback-cn">
+                <div class="preview-type preview-type-cn">{{ typeCode }}</div>
+                <div class="preview-cn preview-cn-cn">{{ typeCn }}</div>
+              </div>
+            </div>
+            <div class="preview-info-cn">
+              <div class="preview-badge preview-badge-cn">SBTI 人格测试</div>
+              <div class="preview-type preview-type-cn">{{ typeCode }}</div>
+              <div class="preview-cn preview-cn-cn">{{ typeCn }}</div>
+              <div class="preview-intro preview-intro-cn">{{ typeIntro }}</div>
+              <div class="preview-match preview-match-cn">{{ badge }}</div>
+              <div class="preview-footer preview-footer-cn">经典结果图风格分享页</div>
             </div>
           </div>
         </div>
+
+         <div v-else class="preview-bg">
+           <div class="preview-deco"></div>
+           <div class="preview-content">
+             <div class="preview-badge">{{ isCN ? 'SBTI 人格测试' : 'SBTI Personality Test' }}</div>
+             <div class="preview-type">{{ typeCode }}</div>
+             <div class="preview-cn">{{ typeCn }}</div>
+             <div class="preview-intro">{{ typeIntro }}</div>
+             <div class="preview-match">{{ badge }}</div>
+             <div class="preview-footer">
+               <span>{{ isCN ? '扫码或访问链接查看详情 →' : 'Scan QR or visit link for details →' }}</span>
+             </div>
+           </div>
+         </div>
       </div>
 
-      <!-- 操作按钮 -->
-      <div class="share-actions">
-        <button class="share-btn primary" @click="exportImage">
-          <span class="share-icon">📸</span>
-          <span>保存为图片</span>
-        </button>
-        <button class="share-btn" @click="copyLink">
-          <span class="share-icon">🔗</span>
-          <span>复制分享链接</span>
-        </button>
+        <div class="share-actions">
+          <button class="share-btn primary" @click="exportImage">
+            <span class="share-icon">📸</span>
+            <span>{{ isCN ? '保存经典海报' : 'Save as Image' }}</span>
+          </button>
+         <button class="share-btn" @click="copyLink">
+           <span class="share-icon">🔗</span>
+           <span>{{ isCN ? '复制分享链接' : 'Copy Link' }}</span>
+         </button>
+       </div>
+
+       <div class="social-share">
+         <p class="social-title">{{ isCN ? '分享到' : 'Share to' }}</p>
+         <div class="social-grid">
+           <button class="social-btn wechat" @click="shareTo('wechat')">
+             <span class="social-icon">💬</span>
+             <span>{{ isCN ? '微信' : 'WeChat' }}</span>
+           </button>
+           <button class="social-btn weibo" @click="shareTo('weibo')">
+             <span class="social-icon">📢</span>
+             <span>{{ isCN ? '微博' : 'Weibo' }}</span>
+           </button>
+           <button class="social-btn qq" @click="shareTo('qq')">
+             <span class="social-icon">🐧</span>
+             <span>QQ</span>
+           </button>
+           <button class="social-btn douban" @click="shareTo('douban')">
+             <span class="social-icon">🎬</span>
+             <span>{{ isCN ? '豆瓣' : 'Douban' }}</span>
+           </button>
+           <button class="social-btn tieba" @click="shareTo('tieba')">
+             <span class="social-icon">📘</span>
+             <span>{{ isCN ? '贴吧' : 'Tieba' }}</span>
+           </button>
+           <button class="social-btn more" @click="nativeShare">
+             <span class="social-icon">⋯</span>
+             <span>{{ isCN ? '更多' : 'More' }}</span>
+           </button>
+         </div>
       </div>
 
-      <!-- 社交平台分享 -->
-      <div class="social-share">
-        <p class="social-title">分享到</p>
-        <div class="social-grid">
-          <button class="social-btn wechat" @click="shareTo('wechat')">
-            <span class="social-icon">💬</span>
-            <span>微信</span>
-          </button>
-          <button class="social-btn weibo" @click="shareTo('weibo')">
-            <span class="social-icon">📢</span>
-            <span>微博</span>
-          </button>
-          <button class="social-btn qq" @click="shareTo('qq')">
-            <span class="social-icon">🐧</span>
-            <span>QQ</span>
-          </button>
-          <button class="social-btn douban" @click="shareTo('douban')">
-            <span class="social-icon">🎬</span>
-            <span>豆瓣</span>
-          </button>
-          <button class="social-btn tieba" @click="shareTo('tieba')">
-            <span class="social-icon">📘</span>
-            <span>贴吧</span>
-          </button>
-          <button class="social-btn more" @click="nativeShare">
-            <span class="social-icon">⋯</span>
-            <span>更多</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Toast 提示 -->
       <transition name="toast">
         <div class="toast" v-if="toastMsg">{{ toastMsg }}</div>
       </transition>
@@ -74,113 +96,158 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
+<script>
+import { computed, defineComponent, ref, watch } from 'vue'
 import html2canvas from 'html2canvas'
 
-const props = defineProps({
-  visible: Boolean,
-  typeCode: String,
-  typeCn: String,
-  typeIntro: String,
-  badge: String
+export default defineComponent({
+  name: 'SharePanel',
+   props: {
+     visible: Boolean,
+     version: {
+       type: String,
+       default: 'en'
+     },
+     typeCode: String,
+     typeCn: String,
+     typeIntro: String,
+     badge: String,
+     posterUrl: {
+       type: String,
+       default: ''
+     }
+   },
+   emits: ['close'],
+   setup(props) {
+     const shareCardRef = ref(null)
+     const toastMsg = ref('')
+     const posterLoadFailed = ref(false)
+
+     const isCN = computed(() => props.version === 'cn')
+     const showPosterImage = computed(() => isCN.value && props.posterUrl && !posterLoadFailed.value)
+
+    watch(
+      () => [props.visible, props.posterUrl, props.typeCode, props.version],
+      () => {
+        posterLoadFailed.value = false
+      }
+    )
+
+    function getShareUrl() {
+      const basePath = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+      return `${window.location.origin}${basePath}/${props.version}/share/${props.typeCode}`
+    }
+
+    function showToast(msg) {
+      toastMsg.value = msg
+      setTimeout(() => {
+        toastMsg.value = ''
+      }, 2500)
+    }
+
+    function handlePosterError() {
+      posterLoadFailed.value = true
+    }
+
+     async function exportImage() {
+       if (!shareCardRef.value) return
+
+        try {
+          showToast(isCN.value ? '正在生成图片...' : 'Generating image...')
+          const canvas = await html2canvas(shareCardRef.value, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: isCN.value ? '#f6faf6' : null
+          })
+        const link = document.createElement('a')
+        link.download = `SBTI-${props.typeCode}-${props.typeCn}.png`
+        link.href = canvas.toDataURL('image/png')
+        link.click()
+        showToast(isCN.value ? '✅ 图片已保存！' : '✅ Image saved!')
+      } catch {
+        showToast(isCN.value ? '❌ 导出失败，请重试' : '❌ Export failed. Try again.')
+      }
+    }
+
+    async function copyLink() {
+      const url = getShareUrl()
+      try {
+        await navigator.clipboard.writeText(url)
+        showToast(isCN.value ? '✅ 链接已复制！' : '✅ Link copied!')
+      } catch {
+        const ta = document.createElement('textarea')
+        ta.value = url
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        showToast(isCN.value ? '✅ 链接已复制！' : '✅ Link copied!')
+      }
+    }
+
+    function shareTo(platform) {
+      const url = encodeURIComponent(getShareUrl())
+      const title = isCN.value 
+        ? encodeURIComponent(`我的SBTI人格是 ${props.typeCode}（${props.typeCn}）！快来测测你是哪种抽象人格 →`)
+        : encodeURIComponent(`My SBTI type is ${props.typeCode} (${props.typeCn})! Find your vibe →`)
+      const summary = encodeURIComponent(props.typeIntro || '')
+
+      const shareUrls = {
+        weibo: `https://service.weibo.com/share/share.php?url=${url}&title=${title}`,
+        qq: `https://connect.qq.com/widget/shareqq/index.html?url=${url}&title=${title}&summary=${summary}`,
+        douban: `https://www.douban.com/share/service?url=${url}&name=${title}`,
+        tieba: `http://tieba.baidu.com/f/commit/share/openShareApi?url=${url}&title=${title}`
+      }
+
+      if (platform === 'wechat') {
+        copyLink()
+        showToast(isCN.value ? '💡 微信请复制链接后粘贴发送' : '💡 Copy link and paste to share on WeChat')
+        return
+      }
+
+      if (shareUrls[platform]) {
+        window.open(shareUrls[platform], '_blank', 'width=600,height=500')
+      }
+    }
+
+     function nativeShare() {
+       if (navigator.share) {
+         const title = isCN.value 
+           ? `SBTI - ${props.typeCode}（${props.typeCn}）`
+           : `SBTI - ${props.typeCode} (${props.typeCn})`
+         const text = isCN.value
+           ? `我的SBTI人格是 ${props.typeCode}（${props.typeCn}）！${props.typeIntro}`
+           : `My SBTI type is ${props.typeCode} (${props.typeCn})! ${props.typeIntro}`
+         navigator.share({
+           title,
+           text,
+           url: getShareUrl()
+         }).catch(() => {})
+       } else {
+         copyLink()
+       }
+     }
+
+     return {
+       copyLink,
+       exportImage,
+       handlePosterError,
+       isCN,
+       nativeShare,
+       shareCardRef,
+       shareTo,
+       showPosterImage,
+       toastMsg
+     }
+  }
 })
-
-const emit = defineEmits(['close'])
-const shareCardRef = ref(null)
-const toastMsg = ref('')
-const shareUrl = ref('')
-
-onMounted(() => {
-  shareUrl.value = window.location.href.split('#')[0] + '#/share/' + props.typeCode
-})
-
-function getShareUrl() {
-  return window.location.href.split('#')[0] + '#/share/' + props.typeCode
-}
-
-function showToast(msg) {
-  toastMsg.value = msg
-  setTimeout(() => { toastMsg.value = '' }, 2500)
-}
-
-async function exportImage() {
-  if (!shareCardRef.value) return
-  try {
-    showToast('正在生成图片...')
-    const canvas = await html2canvas(shareCardRef.value, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: null
-    })
-    const link = document.createElement('a')
-    link.download = `SBTI-${props.typeCode}-${props.typeCn}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-    showToast('✅ 图片已保存！')
-  } catch (e) {
-    showToast('❌ 导出失败，请重试')
-  }
-}
-
-async function copyLink() {
-  const url = getShareUrl()
-  try {
-    await navigator.clipboard.writeText(url)
-    showToast('✅ 链接已复制！')
-  } catch {
-    // fallback
-    const ta = document.createElement('textarea')
-    ta.value = url
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
-    showToast('✅ 链接已复制！')
-  }
-}
-
-function shareTo(platform) {
-  const url = encodeURIComponent(getShareUrl())
-  const title = encodeURIComponent(`我的SBTI人格是 ${props.typeCode}（${props.typeCn}）！快来测测你是哪种抽象人格 →`)
-  const summary = encodeURIComponent(props.typeIntro)
-
-  const shareUrls = {
-    weibo: `https://service.weibo.com/share/share.php?url=${url}&title=${title}`,
-    qq: `https://connect.qq.com/widget/shareqq/index.html?url=${url}&title=${title}&summary=${summary}`,
-    douban: `https://www.douban.com/share/service?url=${url}&name=${title}`,
-    tieba: `http://tieba.baidu.com/f/commit/share/openShareApi?url=${url}&title=${title}`
-  }
-
-  if (platform === 'wechat') {
-    copyLink()
-    showToast('💡 微信请复制链接后粘贴发送')
-    return
-  }
-
-  if (shareUrls[platform]) {
-    window.open(shareUrls[platform], '_blank', 'width=600,height=500')
-  }
-}
-
-function nativeShare() {
-  if (navigator.share) {
-    navigator.share({
-      title: `SBTI - ${props.typeCode}（${props.typeCn}）`,
-      text: `我的SBTI人格是 ${props.typeCode}（${props.typeCn}）！${props.typeIntro}`,
-      url: getShareUrl()
-    }).catch(() => {})
-  } else {
-    copyLink()
-  }
-}
 </script>
 
 <style scoped>
 .share-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -205,6 +272,10 @@ function nativeShare() {
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.share-panel-cn {
+  max-width: 560px;
+}
+
 @keyframes slideUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
@@ -225,7 +296,8 @@ function nativeShare() {
 }
 
 .close-btn {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px solid #e8f0ea;
   background: #f6faf6;
@@ -254,12 +326,61 @@ function nativeShare() {
   overflow: hidden;
 }
 
+.preview-bg-cn {
+  background:
+    radial-gradient(circle at top right, rgba(127, 165, 134, 0.18), rgba(127, 165, 134, 0) 36%),
+    linear-gradient(180deg, #ffffff, #f4f8f4);
+  border: 1px solid #dbe8dd;
+  padding: 18px;
+}
+
+.preview-classic-cn {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.preview-poster-cn {
+  min-height: 360px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-image-cn {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.preview-fallback-cn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.preview-info-cn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+
 .preview-deco {
   position: absolute;
-  width: 140px; height: 140px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(127,165,134,0.2), transparent);
-  top: -40px; right: -30px;
+  top: -40px;
+  right: -30px;
 }
 
 .preview-content {
@@ -280,11 +401,23 @@ function nativeShare() {
   margin-bottom: 16px;
 }
 
+.preview-badge-cn {
+  align-self: flex-start;
+  color: #4d6a53;
+  background: #edf6ef;
+  border-color: #dbe8dd;
+}
+
 .preview-type {
   font-size: 36px;
   font-weight: 900;
   color: #fff;
   letter-spacing: -0.02em;
+}
+
+.preview-type-cn {
+  color: #1e2a22;
+  font-size: clamp(34px, 7vw, 48px);
 }
 
 .preview-cn {
@@ -293,11 +426,20 @@ function nativeShare() {
   margin-top: 4px;
 }
 
+.preview-cn-cn {
+  color: #4d6a53;
+}
+
 .preview-intro {
   font-size: 14px;
   color: rgba(255,255,255,0.6);
   margin-top: 12px;
   line-height: 1.6;
+}
+
+.preview-intro-cn {
+  color: #6a786f;
+  line-height: 1.8;
 }
 
 .preview-match {
@@ -312,12 +454,24 @@ function nativeShare() {
   padding: 6px 14px;
 }
 
+.preview-match-cn {
+  align-self: flex-start;
+  color: #4d6a53;
+  background: #edf6ef;
+  border-color: #dbe8dd;
+}
+
 .preview-footer {
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid rgba(255,255,255,0.1);
   font-size: 12px;
   color: rgba(255,255,255,0.35);
+}
+
+.preview-footer-cn {
+  border-top-color: #dbe8dd;
+  color: #8b9a8e;
 }
 
 .share-actions {
@@ -360,7 +514,9 @@ function nativeShare() {
   transform: translateY(-1px);
 }
 
-.share-icon { font-size: 18px; }
+.share-icon {
+  font-size: 18px;
+}
 
 .social-share {
   padding-top: 20px;
@@ -399,7 +555,9 @@ function nativeShare() {
   border-color: #c4d8c8;
 }
 
-.social-icon { font-size: 22px; }
+.social-icon {
+  font-size: 22px;
+}
 
 .toast {
   position: fixed;
@@ -429,9 +587,29 @@ function nativeShare() {
   to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
 }
 
+@media (max-width: 640px) {
+  .preview-classic-cn {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-poster-cn {
+    min-height: 280px;
+  }
+}
+
 @media (max-width: 480px) {
-  .share-panel { padding: 20px 16px; }
-  .social-grid { grid-template-columns: repeat(6, 1fr); gap: 6px; }
-  .social-btn { padding: 10px 2px; font-size: 10px; }
+  .share-panel {
+    padding: 20px 16px;
+  }
+
+  .social-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+
+  .social-btn {
+    padding: 10px 2px;
+    font-size: 10px;
+  }
 }
 </style>
