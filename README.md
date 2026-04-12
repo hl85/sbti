@@ -1,4 +1,4 @@
-# SBTI 人格测试
+# SBTI 人格测试(中英双语版） 一键发布Cloudflare
 
 > MBTI 已经过时，SBTI 来了。
 
